@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   Activity,
   ArrowRight,
@@ -68,6 +68,129 @@ const treatments = [
   { name: "Weight Management", description: "A medically informed, sustainable approach to metabolism, energy, and healthy lifestyle changes that last.", icon: Target, image: weightManagementImage },
 ];
 
+const pricingCatalog = [
+  { category: "Consultation", service: "Consultation", amount: 30000 },
+  { category: "Facial Treatment", service: "Deep Cleansing Facial", amount: 60000 },
+  { category: "Facial Treatment", service: "Anti-Acne Facial", amount: 60000 },
+  { category: "Facial Treatment", service: "HydraFacial", amount: 65000 },
+  { category: "Facial Treatment", service: "Carbon Laser Facial", amount: 65000 },
+  { category: "Facial Treatment", service: "Dermaplaning", amount: 50000 },
+  { category: "Facial Treatment", service: "Signature Facial", amount: 50000 },
+  { category: "Facial Treatment", service: "Vajacial (VJAY Facial)", amount: 80000 },
+  { category: "Chemical Peel", service: "Salicylic Chemical Peel (Acne/Acne-Prone Skin)", amount: 70000 },
+  { category: "Chemical Peel", service: "PRX Peel (Instant Glow)", amount: 180000 },
+  { category: "Chemical Peel", service: "Cosmelan Peel", amount: 850000 },
+  { category: "Chemical Peel", service: "TCA Peel (Dark Knuckles, Elbows & Knees)", amount: 120000 },
+  { category: "Medical Weight Management", service: "semaglutide/tirzepatide 2.5 mg", amount: 750000 },
+  { category: "Medical Weight Management", service: "semaglutide/tirzepatide 5 mg", amount: 850000 },
+  { category: "Medical Weight Management", service: "semaglutide/tirzepatide 7.5 mg", amount: 1000000 },
+  { category: "Medical Weight Management", service: "semaglutide/tirzepatide 10 mg", amount: 1100000 },
+  { category: "Medical Weight Management", service: "semaglutide/tirzepatide 12.5 mg", amount: 1200000 },
+  { category: "Medical Weight Management", service: "semaglutide/tirzepatide 15 mg", amount: 1300000 },
+  { category: "Laser Brow Removal", service: "Laser Brow Removal", amount: 80000 },
+  { category: "Laser Brow Removal", service: "Laser Tattoo Removal", amount: 70000 },
+  { category: "Sauna", service: "Body Polishing & Sauna", amount: 70000 },
+  { category: "Sauna", service: "Full Body Scrubbing", amount: 50000 },
+  { category: "IV Infusion & Wellness", service: "Anti-Aging Drip", amount: 50000 },
+  { category: "IV Infusion & Wellness", service: "IV Glow Therapy", amount: 60000 },
+  { category: "IV Infusion & Wellness", service: "Detox IV", amount: 80000 },
+  { category: "IV Infusion & Wellness", service: "NAD Infusion", amount: 80000 },
+  { category: "IV Infusion & Wellness", service: "Skinny Drip", amount: 50000 },
+  { category: "IV Infusion & Wellness", service: "Vitamin B12 Shot", amount: 35000 },
+  { category: "Wellness", service: "O-Shot/ penis shot", amount: 150000 },
+  { category: "Microneedling", service: "Vampire Facial (PRP Microneedling)", amount: 180000 },
+  { category: "Microneedling", service: "PRX Microneedling", amount: 280000 },
+  { category: "Microneedling", service: "Stretch Mark PRP Microneedling", amount: 80000 },
+  { category: "Microneedling", service: "PRP Hair Loss Treatment", amount: 150000 },
+  { category: "Microneedling", service: "PRP Hair Loss Treatment + Minoxidil", amount: 280000 },
+  { category: "Mesotherapy & Skin Boosters", service: "Glow Booster Mesotherapy", amount: 150000 },
+  { category: "Mesotherapy & Skin Boosters", service: "Meso Botox", amount: 400000 },
+  { category: "Mesotherapy & Skin Boosters", service: "Polynucleotide Under Eye Treatment", amount: 250000 },
+  { category: "Mesotherapy & Skin Boosters", service: "Skin Booster/Mesotherapy", amount: 180000 },
+  { category: "Botox Treatments", service: "Anti-Wrinkle Botox", amount: 280000 },
+  { category: "Botox Treatments", service: "Masseter Botox", amount: 280000 },
+  { category: "Botox Treatments", service: "Botox for Hyperhidrosis (Excessive Armpit Sweating)", amount: 280000 },
+  { category: "Dermal Fillers", service: "Dermal Filler", amount: 280000 },
+  { category: "Dermal Fillers", service: "Labial Filler (3 ml)", amount: 1100000 },
+  { category: "Dermal Fillers", service: "Labial Filler (4 ml)", amount: 1300000 },
+  { category: "PDO Threads", service: "PDO Mono Threads", amount: 150000 },
+  { category: "PDO Threads", service: "PDO Thread Nose Lift", amount: 250000 },
+  { category: "PDO Threads", service: "PDO Thread Double Chin Lift", amount: 450000 },
+  { category: "PDO Threads", service: "PDO Thread Face Lift", amount: 750000 },
+  { category: "Injection Lipolysis & Body Contouring", service: "Injection Lipolysis (Fat Reduction)", amount: 80000 },
+  { category: "Injection Lipolysis & Body Contouring", service: "EM Sculpt", amount: 75000 },
+  { category: "Injection Lipolysis & Body Contouring", service: "Radio Frequency", amount: 220000 },
+  { category: "Laser Treatments", service: "Chin Laser Hair Removal", amount: 60000 },
+  { category: "Laser Treatments", service: "Laser Hair Removal (Armpits)", amount: 70000 },
+  { category: "Laser Treatments", service: "Laser Hair Removal (VJAY)", amount: 75000 },
+  { category: "Laser Treatments", service: "Laser Hair Removal (Full Face)", amount: 95000 },
+  { category: "Laser Treatments", service: "Laser Hair Removal (Hollywood)", amount: 110000 },
+];
+
+function formatPrice(amount: number) {
+  return new Intl.NumberFormat("en-NG", { maximumFractionDigits: 0 }).format(amount);
+}
+
+function getServiceSuggestions(selectedTreatment: string) {
+  const treatmentKey = selectedTreatment.trim().toLowerCase();
+
+  if (!treatmentKey) {
+    return pricingCatalog.slice(0, 8);
+  }
+
+  return pricingCatalog.filter((service) => {
+    const categoryMatch = service.category.toLowerCase().includes(treatmentKey);
+    const serviceMatch = service.service.toLowerCase().includes(treatmentKey);
+    return categoryMatch || serviceMatch;
+  }).slice(0, 12);
+}
+
+function sendConsultationEmail(payload: Record<string, string>) {
+  const subject = encodeURIComponent("New consultation request");
+  const body = encodeURIComponent([
+    "New consultation request",
+    "",
+    `Name: ${payload.name}`,
+    `Phone: ${payload.phone}`,
+    `Email: ${payload.email}`,
+    `Treatment: ${payload.treatment}`,
+    `Selected service: ${payload.service}`,
+    `Price: ${payload.price}`,
+    `Preferred date: ${payload.date}`,
+    `Preferred time: ${payload.time}`,
+  ].join("\n"));
+
+  window.location.href = `mailto:info@sofiajofielmedspa.com?subject=${subject}&body=${body}`;
+}
+
+function prepareFlutterwaveCheckout(service: { service: string; amount: number }, payload: Record<string, string>) {
+  const publicKey = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY;
+  if (!publicKey) {
+    window.alert("Flutterwave payment is not configured yet. Add VITE_FLUTTERWAVE_PUBLIC_KEY to enable live checkout.");
+    return;
+  }
+
+  const txRef = `sj-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+  const redirectUrl = `${window.location.origin}/booking-success?status=successful&tx_ref=${encodeURIComponent(txRef)}`;
+  const url = new URL("https://checkout.flutterwave.com/v3");
+  url.searchParams.set("public_key", publicKey);
+  url.searchParams.set("tx_ref", txRef);
+  url.searchParams.set("amount", String(service.amount / 100));
+  url.searchParams.set("currency", "NGN");
+  url.searchParams.set("redirect_url", redirectUrl);
+  url.searchParams.set("payment_options", "card,banktransfer,ussd,account,bank,qr,barter");
+  url.searchParams.set("customer[name]", payload.name || "Sofia Jofiel client");
+  url.searchParams.set("customer[email]", payload.email || "guest@example.com");
+  url.searchParams.set("customer[phone_number]", payload.phone || "");
+  url.searchParams.set("meta[service]", service.service);
+  url.searchParams.set("meta[treatment]", payload.treatment || "Consultation");
+  url.searchParams.set("customizations[title]", "Sofia Jofiel Medical Aesthetics & Spa");
+  url.searchParams.set("customizations[description]", `Payment for ${service.service}`);
+
+  sessionStorage.setItem("pendingConsultation", JSON.stringify({ ...payload, service: service.service, price: formatPrice(service.amount) }));
+  window.location.href = url.toString();
+}
+
 const pillars = [
   { number: "01", title: "Expert Clinical Practitioners", text: "Our experienced clinicians combine medical precision with an artist's eye for beautifully subtle results.", icon: ShieldCheck },
   { number: "02", title: "State-of-the-Art Technology", text: "We invest in proven, advanced technologies selected for safety, comfort, and exceptional outcomes.", icon: Microscope },
@@ -135,8 +258,8 @@ function BrandLogo({ className = "", footer = false }: { className?: string; foo
   }
 
   const style = footer
-    ? { width: "calc(16rem * 0.9 * 0.9 * 1.21)", height: "auto" }
-    : { width: "auto", height: "calc(3.5rem * 1.188 * 1.1 * 1.1 * 1.1 * 1.1)" };
+    ? { width: "calc(16rem * 0.9 * 0.9 * 1.21 * 1.1)", height: "auto" }
+    : { width: "auto", height: "calc(3.5rem * 1.188 * 1.1 * 1.1 * 1.1 * 1.1 * 1.1)" };
 
   return (
     <img
@@ -179,31 +302,42 @@ function BookingDialog({ open, onOpenChange, defaultTreatment = "" }: { open: bo
     if (!next) window.setTimeout(() => setStep("form"), 200);
   }
 
+  const [selectedService, setSelectedService] = useState<{ service: string; amount: number } | null>(null);
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget as HTMLFormElement;
-    const name = (form.querySelector('#name') as HTMLInputElement)?.value || "";
-    const phone = (form.querySelector('#phone') as HTMLInputElement)?.value || "";
-    const email = (form.querySelector('#email') as HTMLInputElement)?.value || "";
-    const date = preferredDate || "";
-    const time = preferredTime || "";
+    const payload = {
+      name: (form.querySelector('#name') as HTMLInputElement)?.value || "",
+      phone: (form.querySelector('#phone') as HTMLInputElement)?.value || "",
+      email: (form.querySelector('#email') as HTMLInputElement)?.value || "",
+      treatment: treatment || "Consultation",
+      date: preferredDate || "",
+      time: preferredTime || "",
+    };
 
-    const subject = encodeURIComponent('New consultation request');
-    const body = encodeURIComponent([
-      'New consultation request',
-      '',
-      `Name: ${name}`,
-      `Phone: ${phone}`,
-      `Email: ${email}`,
-      `Treatment: ${treatment}`,
-      `Preferred date: ${date}`,
-      `Preferred time: ${time}`,
-    ].join('\n'));
-    const recipient = 'info@sofiajofielmedspa.com';
+    const suggestions = getServiceSuggestions(payload.treatment);
+    const fallback = suggestions[0] ?? { category: "Consultation", service: "Consultation", amount: 30000 };
 
-    window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
-    setStep("success");
+    sessionStorage.setItem("pendingConsultation", JSON.stringify({ ...payload, service: fallback.service, price: formatPrice(fallback.amount) }));
+    setSelectedService(fallback);
+    setStep("service");
   }
+
+  function completePayment() {
+    if (!selectedService) return;
+
+    const stored = sessionStorage.getItem("pendingConsultation");
+    const payload = stored ? JSON.parse(stored) : { name: "", phone: "", email: "", treatment: treatment || "Consultation", date: preferredDate || "", time: preferredTime || "" };
+
+    prepareFlutterwaveCheckout(selectedService, payload);
+  }
+
+  useEffect(() => {
+    if (step === "form") {
+      setSelectedService(null);
+    }
+  }, [step]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -215,6 +349,39 @@ function BookingDialog({ open, onOpenChange, defaultTreatment = "" }: { open: bo
             <DialogTitle className="mt-3 font-display text-4xl font-normal leading-tight">Your consultation journey begins here.</DialogTitle>
              <DialogDescription className="mx-auto mt-4 max-w-md text-sm leading-7">Our Sofia Jofiel concierge will contact you shortly to confirm your preferred appointment and answer any questions.</DialogDescription>
              <Button className="mt-8 h-12 rounded-none px-8 uppercase" onClick={() => handleOpenChange(false)}>Return to Sofia Jofiel</Button>
+          </div>
+        ) : step === "service" ? (
+          <div className="p-7 sm:p-10">
+            <DialogHeader>
+              <p className="text-xs font-semibold uppercase text-gold">Select a service</p>
+              <DialogTitle className="font-display text-3xl font-normal">Choose the exact treatment</DialogTitle>
+              <DialogDescription>We matched your request to the closest package options. Pick the one that fits your preferred result.</DialogDescription>
+            </DialogHeader>
+            <div className="mt-7 space-y-3">
+              {getServiceSuggestions(treatment).map((option) => (
+                <button
+                  key={`${option.category}-${option.service}`}
+                  type="button"
+                  onClick={() => {
+                    setSelectedService(option);
+                    const stored = sessionStorage.getItem("pendingConsultation");
+                    const payload = stored ? JSON.parse(stored) : { name: "", phone: "", email: "", treatment: treatment || "Consultation", date: preferredDate || "", time: preferredTime || "" };
+                    sessionStorage.setItem("pendingConsultation", JSON.stringify({ ...payload, service: option.service, price: formatPrice(option.amount) }));
+                  }}
+                  className={`flex w-full items-center justify-between rounded-none border p-4 text-left transition ${selectedService?.service === option.service ? "border-gold bg-gold/10" : "border-border bg-background hover:border-gold/50"}`}
+                >
+                  <div>
+                    <p className="text-[0.6rem] uppercase tracking-[0.2em] text-gold">{option.category}</p>
+                    <p className="mt-2 font-display text-xl leading-tight">{option.service}</p>
+                  </div>
+                  <span className="text-sm font-semibold text-foreground">₦{formatPrice(option.amount)}</span>
+                </button>
+              ))}
+            </div>
+            <div className="mt-7 flex gap-3">
+              <Button type="button" variant="outline" className="h-11 rounded-none px-5 uppercase" onClick={() => setStep("form")}>Back</Button>
+              <Button type="button" className="h-11 flex-1 rounded-none px-5 uppercase" onClick={completePayment} disabled={!selectedService}>Continue to payment</Button>
+            </div>
           </div>
         ) : (
           <div className="grid md:grid-cols-[0.72fr_1.28fr]">
@@ -294,14 +461,21 @@ function Index() {
         <div className="mx-auto flex h-20 max-w-[90rem] items-center justify-between px-5 lg:px-10">
           <BrandMark />
           <nav aria-label="Main navigation" className="hidden items-center gap-8 lg:flex">
-            {["Treatments", "Gallery", "About", "Philosophy", "Contact"].map((item) => <a key={item} href={`#${item.toLowerCase()}`} className="text-xs font-semibold uppercase text-muted-foreground transition-colors hover:text-gold">{item}</a>)}
+            <Link to="/services" className="text-xs font-semibold uppercase text-muted-foreground transition-colors hover:text-gold">Services</Link>
+            {[
+              ["Treatments", "#treatments"],
+              ["Gallery", "#gallery"],
+              ["About", "#about"],
+              ["Philosophy", "#philosophy"],
+              ["Contact", "#contact"],
+            ].map(([item, href]) => <a key={item} href={href} className="text-xs font-semibold uppercase text-muted-foreground transition-colors hover:text-gold">{item}</a>)}
           </nav>
           <div className="flex items-center gap-2">
             <Button onClick={() => openBooking()} className="hidden h-11 rounded-none px-6 text-xs uppercase sm:inline-flex">Book consultation</Button>
             <Button variant="ghost" size="icon" aria-label={menuOpen ? "Close menu" : "Open menu"} onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden">{menuOpen ? <X /> : <Menu />}</Button>
           </div>
         </div>
-        {menuOpen && <nav className="border-t border-border bg-background px-5 py-6 lg:hidden">{["Treatments", "Gallery", "About", "Philosophy", "Contact"].map((item) => <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setMenuOpen(false)} className="block border-b border-border py-4 font-display text-2xl">{item}</a>)}<Button onClick={() => openBooking()} className="mt-6 h-12 w-full rounded-none">Book consultation</Button></nav>}
+        {menuOpen && <nav className="border-t border-border bg-background px-5 py-6 lg:hidden"><Link to="/services" onClick={() => setMenuOpen(false)} className="block border-b border-border py-4 font-display text-2xl">Services</Link>{[["Treatments", "#treatments"], ["Gallery", "#gallery"], ["About", "#about"], ["Philosophy", "#philosophy"], ["Contact", "#contact"]].map(([item, href]) => <a key={item} href={href} onClick={() => setMenuOpen(false)} className="block border-b border-border py-4 font-display text-2xl">{item}</a>)}<Button onClick={() => openBooking()} className="mt-6 h-12 w-full rounded-none">Book consultation</Button></nav>}
       </header>
 
       <section className="relative min-h-[calc(100svh-5rem)] border-b border-border lg:min-h-[calc(100vh-5rem)]">
