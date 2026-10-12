@@ -212,23 +212,68 @@ function prepareFlutterwaveCheckout(service: { service: string; amount: number }
 
   const txRef = `sj-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
   const redirectUrl = `${window.location.origin}/booking-success?status=successful&tx_ref=${encodeURIComponent(txRef)}`;
-  const url = new URL("https://checkout.flutterwave.com/v3");
-  url.searchParams.set("public_key", publicKey);
-  url.searchParams.set("tx_ref", txRef);
-  url.searchParams.set("amount", String(service.amount / 100));
-  url.searchParams.set("currency", "NGN");
-  url.searchParams.set("redirect_url", redirectUrl);
-  url.searchParams.set("payment_options", "card,banktransfer,ussd,account,bank,qr,barter");
-  url.searchParams.set("customer[name]", payload.name || "Sofia Jofiel client");
-  url.searchParams.set("customer[email]", payload.email || "guest@example.com");
-  url.searchParams.set("customer[phone_number]", payload.phone || "");
-  url.searchParams.set("meta[service]", service.service);
-  url.searchParams.set("meta[treatment]", payload.treatment || "Consultation");
-  url.searchParams.set("customizations[title]", "Sofia Jofiel Medical Aesthetics & Spa");
-  url.searchParams.set("customizations[description]", `Payment for ${service.service}`);
 
-  sessionStorage.setItem("pendingConsultation", JSON.stringify({ ...payload, service: service.service, price: formatPrice(service.amount) }));
-  window.location.href = url.toString();
+  sessionStorage.setItem(
+    "pendingConsultation",
+    JSON.stringify({ ...payload, service: service.service, price: formatPrice(service.amount), tx_ref: txRef }),
+  );
+
+  const scriptId = "flutterwave-checkout-script";
+  const openCheckout = () => {
+    const FlutterwaveCheckout = (window as typeof window & { FlutterwaveCheckout?: (config: Record<string, unknown>) => void })
+      .FlutterwaveCheckout;
+
+    if (typeof FlutterwaveCheckout !== "function") {
+      window.alert("Flutterwave checkout failed to load. Please try again.");
+      return;
+    }
+
+    FlutterwaveCheckout({
+      public_key: publicKey,
+      tx_ref: txRef,
+      amount: service.amount / 100,
+      currency: "NGN",
+      payment_options: "card,banktransfer,ussd,account,bank,qr,barter",
+      redirect_url: redirectUrl,
+      customer: {
+        email: payload.email || "guest@example.com",
+        phone_number: payload.phone || "",
+        name: payload.name || "Sofia Jofiel client",
+      },
+      customizations: {
+        title: "Sofia Jofiel Medical Aesthetics & Spa",
+        description: `Payment for ${service.service}`,
+      },
+      meta: {
+        service: service.service,
+        treatment: payload.treatment || "Consultation",
+      },
+      callback: (response: { tx_ref?: string; status?: string }) => {
+        const nextStatus = response?.status || "successful";
+        const nextTxRef = response?.tx_ref || txRef;
+        window.location.href = `${window.location.origin}/booking-success?status=${encodeURIComponent(nextStatus)}&tx_ref=${encodeURIComponent(nextTxRef)}`;
+      },
+      onclose: () => {
+        console.info("Flutterwave checkout closed without completing payment.");
+      },
+    });
+  };
+
+  const existingScript = document.getElementById(scriptId) as HTMLScriptElement | null;
+  if (existingScript) {
+    openCheckout();
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.id = scriptId;
+  script.src = "https://checkout.flutterwave.com/v3.js";
+  script.async = true;
+  script.onload = openCheckout;
+  script.onerror = () => {
+    window.alert("Flutterwave checkout failed to load. Please try again.");
+  };
+  document.body.appendChild(script);
 }
 
 const pillars = [
