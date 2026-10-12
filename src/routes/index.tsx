@@ -204,9 +204,9 @@ function sendConsultationEmail(payload: Record<string, string>) {
 }
 
 function prepareFlutterwaveCheckout(service: { service: string; amount: number }, payload: Record<string, string>) {
-  const publicKey = (import.meta.env.FLUTTERWAVE_PUBLIC_KEY ?? import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY) as string | undefined;
+  const publicKey = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY as string | undefined;
   if (!publicKey) {
-    window.alert("Flutterwave payment is not configured yet. Add FLUTTERWAVE_PUBLIC_KEY to enable live checkout.");
+    window.alert("Flutterwave payment is not configured yet. Add VITE_FLUTTERWAVE_PUBLIC_KEY to enable live checkout.");
     return;
   }
 
