@@ -138,11 +138,51 @@ function getServiceSuggestions(selectedTreatment: string) {
     return pricingCatalog.slice(0, 8);
   }
 
+  const keywordMap: Record<string, string[]> = {
+    "skin consultation": ["consultation"],
+    "botox treatment": ["botox"],
+    "botox treatments": ["botox"],
+    "derma fillers": ["filler"],
+    "dermal fillers": ["filler"],
+    "medical-grade facials": ["facial", "peel"],
+    "medical grade facials": ["facial", "peel"],
+    "laser treatment": ["laser"],
+    "laser treatments": ["laser"],
+    "body sculpting & treatment": ["body", "sculpt", "contour", "lipolysis"],
+    "body sculpting": ["body", "sculpt", "contour", "lipolysis"],
+    "iv infusion therapy": ["iv", "infusion", "wellness", "b12", "drip"],
+    "weight management": ["weight", "semaglutide", "tirzepatide"],
+  };
+
+  const keywords = keywordMap[treatmentKey] ?? [treatmentKey.replace(/[^a-z0-9\s]/g, " ").trim()];
+
+  const matches = pricingCatalog.filter((service) => {
+    const searchableText = `${service.category} ${service.service}`.toLowerCase();
+    return keywords.some((keyword) => searchableText.includes(keyword));
+  });
+
+  if (matches.length > 0) {
+    return matches.slice(0, 12);
+  }
+
   return pricingCatalog.filter((service) => {
-    const categoryMatch = service.category.toLowerCase().includes(treatmentKey);
-    const serviceMatch = service.service.toLowerCase().includes(treatmentKey);
-    return categoryMatch || serviceMatch;
-  }).slice(0, 12);
+    const searchableText = `${service.category} ${service.service}`.toLowerCase();
+    const broadKeywords = [
+      "consultation",
+      "facial",
+      "peel",
+      "laser",
+      "botox",
+      "filler",
+      "body",
+      "iv",
+      "weight",
+      "thread",
+      "microneedling",
+      "mesotherapy",
+    ];
+    return broadKeywords.some((keyword) => searchableText.includes(keyword) && searchableText.includes(treatmentKey.split(" ")[0] || keyword));
+  }).slice(0, 12) || pricingCatalog.slice(0, 8);
 }
 
 function sendConsultationEmail(payload: Record<string, string>) {
